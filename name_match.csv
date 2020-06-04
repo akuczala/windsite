@@ -1,0 +1,167 @@
+,0,1,2
+0,85A (Zond Systems Inc - 6043),251 Wind,251 Wind
+1,85B (Zond Systems Inc - 6044),Aero Turbine,Alite Wind Farm
+2,Alta I Wind Energy Center,Alite Wind Farm,Alta I
+3,Alta II Wind Energy Center,Alta I,Alta II
+4,Alta III Wind Energy Center,Alta II (Vestas),Alta III
+5,Alta IV Wind Energy Center,Alta III,Alta IV
+6,Alta V Wind Energy Center,Alta IV,Alta Mesa
+7,"Alta Wind VIII, LLC",Alta Mesa I Wind Farm,Alta Mesa 1 and 2
+8,Alta X Wind Energy Center,Alta Mesa II Wind Farm,Alta V
+9,Alta XI Wind Energy Center,Alta V,Alta VI (partial)
+10,Altech III (NAWP Inc. - 6087),Alta VI (partial),Alta VIII (partial)
+11,Anheuser-Busch,Alta VIII (partial),Alta X
+12,Anheuser-Busch #2,Alta X,Alta XI
+13,Buena Vista Energy LLC,Alta XI,Altech III
+14,CDCR-LAC,Altech Energy Wind Farm,Anheuser-Busch Fairfield
+15,Cabazon Wind,Altech III (a),Barstow Marine Logistics Base
+16,"Cabazon Wind Partners, LLC",Altech III (b),Brookfield Tehachapi 1 (CCDLP)
+17,Cameron Ridge,Anheuser-Busch Fairfield,Brookfield Tehachapi 2
+18,Cemex BMQ,Brookfield Tehachapi 2,Brookfield Tehachapi 3
+19,Cemex Madison,Brookfield Tehachapi 3,Buena Vista
+20,Cemex River Plant,Buena Vista Wind Farm Repower,Cabazon
+21,City of Soledad,CWES I Wind Farm,California State Prison Los Angeles County
+22,"Coram California Development, LP",CWES II Wind Farm,Cameron Ridge
+23,Coram Energy LLC,Cabazon Wind Farm II,Cemex Black Mountain Quarry
+24,Coram Tehachapi LP,California State Prison Los Angeles County,Cemex Madison
+25,Diablo Wind LLC,Cemex Black Mountain Quarry,Cemex River Plant
+26,Difwind Farms LTD I,Cemex Madison,City of Soledad Water Reclamation Facility
+27,Difwind Farms LTD II,Cemex River Plant,Coram Energy LLC
+28,Difwind Farms LTD V,City of Soledad Water Reclamation Facility,Correctional Training Facility
+29,Difwind Farms Ltd VI,Coram Energy LLC,Desert Hot Springs
+30,Dillon Wind,Desert Hot Springs,Diablo Winds
+31,Dutch Energy Wind Farm,Diablo Winds Wind Farm,Difwind 1
+32,EDF Renewable Windfarm V Inc (ENXCO V),Difwind 6,Difwind 2
+33,East Winds Project (NAWP Inc),Difwind I Wind Farm,Difwind 5
+34,"Edom Hills Project 1, LLC",Difwind II Wind Farm,Difwind 6
+35,FPL Energy Montezuma Winds LLC,Difwind V Wind Farm,Dillon
+36,Garnet Wind Energy Center,Dillon Wind Farm,Dinosaur Point
+37,Golden Acorn Casino,Dinosaur Point,Dutch Energy
+38,Golden Hills,Dutch Pacific Wind Farm,EUI Management
+39,Golden Hills North,EDF Renewable V,East Winds
+40,Green Power I (Dutch Energy Corp),EUI Management,Edom Hills (repower)
+41,"Hatchet Ridge Wind, LLC",East Winds (formerly Altech III) Wind Farm,Enron Earth Smart/Green Power
+42,High Winds,Edom Hills (repower) Wind Farm,Garnet Wind Project
+43,IEUA,Energy Unlimited Wind Farm I,Golden Acorn Casino
+44,"International Turbine Research Inc. (Retired June 14, 2018)",Energy Unlimited Wind Farm II,Golden Hills
+45,Karen Avenue Wind Farm,Garnet Wind,Golden Hills North
+46,Kumeyaay Wind Farm,Golden Acorn Casino,H & S - Tehachapi
+47,Manzana Wind,Golden Hills,Hatchett Ridge
+48,Mesa Wind Power Corporation,Golden Hills North,High Winds
+49,"Mojave 16, 17, 18 (Mojave 16-17-18 (Desertwind III PPC Trust) - 6063-6114)",Green Power Wind Farm,Historic Victory Garden (Wind Stream)
+50,Mojave 3 (Mojave 3-4-5 (Desertwind II PPC Trust) - 6113),Green Ridge Power Wind Farm I,Inland Empire Utility Agency
+51,Mojave 4,Green Ridge Power Wind Farm II,Karen Avenue Windfarm
+52,Mojave 5,H & S - Tehachapi,Kumeyaay Phase I
+53,Montezuma Wind II,Hatchet Ridge Wind Farm,Lake Palmdale
+54,Mountain View I,High Winds Wind Farm,Mann Packing
+55,Mountain View II,Inland Empire Utility Agency (IEUA),Manzana Winds
+56,Mountain View III,International Turbine Research Wind Farm,McEvoy Ranch
+57,Mountain View IV,Karen Avenue Wind Farm,Mesa Wind Farm
+58,Mustang Hills LLC (Alta Wind VI Energy Center),Karen Avenue Wind Farm II (San Gorgonio Farms),"Mojave 16, 17 & 18 (Desertwind III PPC Tru"
+59,Nestle Waters,Karen Avenue Windfarm,Montezuma
+60,"North Sky River, LLC",Kenetech Wind Farm,Montezuma Winds II
+61,Oak Creek Wind Power,Kenetech/Wintech Wind Farm,Mountain View IV
+62,"Oasis Power Partners, LLC",Kumeyaay Wind Power Project,Mountain View Power Partners I & II
+63,Ocotillo Express LLC,Lake Palmdale Wind Farm,Mountain View Power Partners III
+64,"Pacific Wind Project, LLC",Manzana Winds,Mustang Hills
+65,Painted Hills Wind Developers (Zond Systems Inc - 6112),McEvoy Ranch,Nestle Waters
+66,Phoenix Wind (Section 20 Trust),Meridian Trust Wind Farm I,Nestle Waters II
+67,Pine Tree Wind Power Plant,Meridian Trust Wind Farm II,Nordex Energy
+68,Pinyon Pines Winds I,Mesa Wind Farm,North Sky River
+69,Pinyon Pines Winds II,Montezuma Wind Project,Oak Creek Energy Systems
+70,Ridgetop Energy (Cannon Energy Corp - 6092),Montezuma Winds II,Oak Creek Wind Power Phase 2
+71,Ridgetop Energy II (Cannon Energy Corp),Mountain View IV,Oasis
+72,Rising Tree Wind Farm I,Mountain View Power Partners I Wind Farm,Oasis Power Partners
+73,Rising Tree Wind Farm II,Mountain View Power Partners II Wind Farm,Ocotillo Wind I
+74,Rising Tree Wind Farm III,Mountain View Power Partners III Wind Farm,Pacific Wind
+75,Robertsons Ready-Mix,Mustang Hills,Painted Hills
+76,Safeway Tracy,Nestle Waters,Palm Springs (repower)
+77,San Gorgonio Farms Wind Farm,Nordex Energy,Patterson Pass
+78,San Gorgonio Westwinds II,Oak Creek Energy Systems,Patterson Wind
+79,San Gorgonio Wind,Ocotillo Wind I,Pine Tree Wind Farm
+80,Scheid Vineyards,Ocotillo Wind I Expansion,Pine Tree extension
+81,Shiloh I Wind (Victory Garden Prtnr PHIV),Pacific West I Wind Farm,Pinyon Pines I
+82,"Shiloh III Wind Project, LLC",Pacific Wind,Pinyon Pines II
+83,"Shiloh IV Wind Project, LLC",Painted Hills B&C Wind Farm I,Ridgetop
+84,"Shiloh Wind Project 2, LLC (Shiloh II & III)",Painted Hills B&C Wind Farm II,Rising Tree North
+85,Sky River Partnership (ESI Energy Inc - 6065),Palm Springs (repower),Rising Tree South
+86,"Solano Wind 1,2 (SMUD Solano Phase 2)",Patterson Pass Wind Farm,Robertsons Ready Mix
+87,Solano Wind 3 (SMUD Solano Phase 1),Pine Tree Extension Wind Farm,Safeway Tracy
+88,Superior Farms,Pine Tree Wind Farm,Salinas Valley State Prison
+89,Taylor Farms,Pinyon Pines I,San Clemente Island
+90,Teichert Vernalis,Pinyon Pines II,San Gorgonio Farms Wind Farm
+91,Terra-Gen 251 Wind (Zond Monolith X),Rising Tree North,San Gorgonio Westwinds II LLC
+92,Terra-Gen Mojave Windfarms (TPC Wind Farms - Tehachapi Power Purchase Trust),Rising Tree South,San Gorgonio Wind Associates 7
+93,Terra-Gen VG Wind,Robertsons Ready Mix,San Jacinto Power Company
+94,Tule Wind,SMUD Wind Farm,Scheid Vineyards
+95,Vasco Wind Energy Center,Safeway Tracy,Shiloh II
+96,Victory Gardens IV (6103),San Clemente Island Wind Farm,Shiloh III
+97,"Voyager Wind II, LLC",San Gorgonio Farms (repower) Wind Farm,Shiloh IV
+98,"Voyager Wind III, LLC",San Gorgonio Farms Wind Farm I,Shiloh Wind Project
+99,"Voyager Wind IV, LLC",San Gorgonio Farms Wind Farm II,Sky River
+100,"WAGNER WIND, LLC",San Gorgonio Farms Wind Farm III,Solano Phase 3
+101,Wal-Mart Red Bluff,San Gorgonio Wind Associates 7,Solano Phase IIA
+102,"Whitewater Hill Partners, LLC",San Jacinto Wind Farm,Solano Wind Project
+103,Wind Resource I (Calwind Wind Resource I),Scheid Vineyards,"Solano Wind Project, Phase I"
+104,Wind Resource II (Calwind),SeaWest Energy Group Wind Farm,"Solano Wind Project, Phase IA"
+105,Wind Stream Operations 6039 (Zond Systems Inc - 6039),SeaWest Windfarms Wind Farm,Superior Farms
+106,Wind Stream Operations 6040 (Zond Systems Inc - 6040),Section 28 Trust Wind Farm,Taylor Farms
+107,Wind Stream Operations 6041 (Zond Systems Inc - 6041),Shiloh II Wind Farm,Tehachapi Hills
+108,Wind Stream Operations 6042 (Zond Systems Inc - 6042),Shiloh IV,Tehachapi Hills (85A)
+109,Wind Stream Operations 6111 (AES Tehachapi Wind - Zond Systems Inc - Northwind),Shiloh Wind Power Project,Tehachapi Hills (85B)
+110,Windland Inc Boxcar I,Solano County Wind Farm,Tehachapi Windplant I
+111,Windland Inc Boxcar II,Solano IIA Wind Farm,Tehachapi Windplant II
+112,Windparks Unlimited 1 and 2,Solano Phase 3,Teichert Aggregates
+113,"Windstar Energy, LLC",Solano Wind Project Phase I,Tule
+114,Wintec Energy #2-A,Solano Wind Project Wind Farm,Vasco (repower)
+115,"Wintec Energy, Ltd.",Solano Wind Project- phase II,Victorville Wind Project
+116,,Southern California Sunbelt Wind Farm I,Voyager II
+117,-,Southern California Sunbelt Wind Farm II,Voyager Wind
+118,-,Superior Farms,Wagner
+119,-,Taylor Farms,Walmart Red Bluff
+120,-,Tehachapi Hills,Whitewater Hill
+121,-,Tehachapi Hills (85A),Windland
+122,-,Tehachapi Hills (85B),Windstar
+123,-,Tehachapi Windplant I,Wintec Palm
+124,-,Tehachapi Windplant II,unknown Alameda County
+125,-,Teichert Aggregates,unknown Contra Costa County
+126,-,Tres Vaqueros I Wind Farm,unknown Kern County
+127,-,Tres Vaqueros II Wind Farm,unknown Riverside County
+128,-,Tule,unknown San Gorgonio Pass 1
+129,-,U.S. Marine Corp Logistics Base,unknown San Gorgonio Pass 4
+130,-,Unknown Alameda County,unknown San Gorgonio Pass 7
+131,-,Unknown Alameda County 2 NEG Micon 60KW,unknown Tehachapi Wind Resource Area 1
+132,-,Unknown Alameda County 250KW,unknown Tehachapi Wind Resource Area 3
+133,-,Unknown Alameda County 65KW,unknown Tulare County
+134,-,Unknown Alameda County Bonus,unknown Yolo County
+135,-,Unknown Alameda County Enertech,-
+136,-,Unknown Kern County,-
+137,-,Unknown Riverside County,-
+138,-,Unknown San Gorgonio Pass 1,-
+139,-,Unknown San Gorgonio Pass 4,-
+140,-,Unknown San Gorgonio Pass 6,-
+141,-,Unknown San Gorgonio Pass 7,-
+142,-,Unknown Solano County,-
+143,-,Unknown Tehachapi Wind Resource Area 1,-
+144,-,Unknown Tehachapi Wind Resource Area 3,-
+145,-,Unknown Tulare County,-
+146,-,Unknown Yolo County,-
+147,-,VPI Enterprises Inc.,-
+148,-,Vasco (repower),-
+149,-,Venture Wind I Wind Farm,-
+150,-,Venture Wind II Wind Farm,-
+151,-,Victorville Wind Project,-
+152,-,Viking Energy '83 Wind Farm,-
+153,-,Wagner,-
+154,-,Walmart Red Bluff,-
+155,-,West Winds Wind Farm,-
+156,-,Westwind Trust Wind Farm,-
+157,-,Westwind-PacifiCorp Wind Farm,-
+158,-,Whitewater Hill Wind Farm I,-
+159,-,Whitewater Hill Wind Farm II,-
+160,-,Wind Power Partners '90-'92 Wind Farm,-
+161,-,Wind Turbine Co. test,-
+162,-,Windstar,-
+163,-,Wintec Palm,-
+164,-,Zond Windsystem Partners Series 85C Wind Farm,-
+165,-,Zond-PanAero Windsystems Wind Farm,-
