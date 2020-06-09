@@ -4,7 +4,7 @@ import requests
 import numpy as np
 import pandas as pd
 import dateutil
-from pyproj import Proj #for elevation
+from pyproj import Proj #for elevation, index lookup
 from IPython.display import display
 import wind as this#self import
 
