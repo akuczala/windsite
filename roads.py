@@ -4,7 +4,7 @@ import numpy as np
 
 api = overpy.Overpass()
 
-def make_query(lat,lon,radius=1000):
+def make_query(lat,lon,radius=5000):
     return """<query type="way">
     <around lat=" """ + str(lat) + """ " lon=" """ + str(lon) + """ " radius=" """ + str(radius) + """ "/>
     </query>
@@ -35,7 +35,7 @@ def closest_valid_node(latlon,ways,debug=False):
     is_valid = list(map(is_valid_highway,highway_labels))
     valid_ways = [way for way,v in zip(ways,is_valid) if v]
     if debug:
-    	print(len(valid_ways),'/',len(result.ways),'valid')
+    	print(len(valid_ways),'/',len(ways),'valid')
 
     if len(valid_ways) == 0:
         return (np.nan,np.nan), np.nan
@@ -45,6 +45,6 @@ def closest_valid_node(latlon,ways,debug=False):
     min_coord = coords[min_idx]
     return min_coord, min_dist
 
-def get_closest_road(latlon,debug=False):
-	result = api.query(make_query(*latlon))
+def get_closest_road(latlon,debug=False,radius=5000):
+	result = api.query(make_query(*latlon,radius=radius))
 	return closest_valid_node(latlon,result.ways,debug=debug)

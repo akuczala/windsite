@@ -8,7 +8,8 @@ import transdist as this
 #from shapely.geometry import Point
 
 MILE_FEET = 5280
-MAX_LAT = 34.472499 #southern CA
+#MAX_LAT = 34.472499 #southern CA
+MAX_LAT = 43 #all CA
 #FAR = (-1000,-100)
 
 def get_bounds(x):
@@ -36,23 +37,28 @@ print(len(special_gdf))
 def sq_dist(lonlat1,lonlat2): #should use geopy dist here
     return (lonlat1[0]-lonlat2[0])**2 + \
     (lonlat1[1]-lonlat2[1])**2
-def find_closest_in_geo(geo,lonlat):
+def distance_metric(lonlat1,lonlat2):
+    return distance(lonlat1[::-1],lonlat2[::-1])
+def bbox_is_in_radius(latlon,bounds,radius):
+    #if distance_metric()
+    pass
+def find_closest_in_geo(geo,lonlat,max_dist = 50):
     #closest = FAR
     if type(geo) == LineString:
-        best_idx = np.argmin([sq_dist(lonlat,p) for p in geo.coords])
+        best_idx = np.argmin([distance_metric(lonlat,p) for p in geo.coords])
         return geo.coords[int(best_idx)]
     else:
         closest_coords = [
             find_closest_in_geo(line,lonlat) for line in geo
         ]
-        best_idx = int(np.argmin([sq_dist(lonlat,p) for p in closest_coords]))
+        best_idx = int(np.argmin([distance_metric(lonlat,p) for p in closest_coords]))
         return closest_coords[best_idx]
 def find_closest_trans_point(latlon):
     lonlat = latlon[::-1]
     closest_coords = [find_closest_in_geo(this.special_gdf['geometry'].iloc[i],lonlat)
                      for i in range(len(this.special_gdf))]
-    best_idx = int(np.argmin([sq_dist(lonlat,p) for p in closest_coords]))
+    best_idx = int(np.argmin([distance_metric(lonlat,p) for p in closest_coords]))
     closest_point = closest_coords[best_idx][::-1]
     dist_miles = distance(latlon,closest_point).miles
     return (best_idx,closest_point,dist_miles) #convert back to latlon
-latlon = (33.5,-115.5)
+#latlon = (33.5,-115.5)
