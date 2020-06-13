@@ -4,7 +4,7 @@ WindSite is an application identifies ideal locations for future wind farm devel
 
 ## Instructions
 
-You can access the app at http://datadoctor.site:8051 .
+You can access the app at http://datadoctor.site: .
 
 The app balances 3 weighted factor in order to recommend sites
 - Transmission line proximity
