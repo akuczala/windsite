@@ -7,7 +7,7 @@ import dateutil
 from pyproj import Proj #for elevation, index lookup
 from IPython.display import display
 import wind as this#self import
-
+import power_curve
 ##taken from NREL github
 # This function finds the nearest x/y indices for a given lat/lon.
 # Rather than fetching the entire coordinates database, which is 500+ MB, this
@@ -131,10 +131,6 @@ def calc_elevation(lat, lng):
 	except ValueError:
 		print('JSON decode failed: '+str(request))
 
-from scipy.interpolate import interp1d
-power_curve_df = pd.read_csv('data/power-curves.csv')
-power_curve_fn = interp1d(power_curve_df['Speed'],power_curve_df['IEC - 3'],bounds_error=False,fill_value=0)
-
 def latlon_to_features(nrel,latlon,features,year = 2013):
 	lat, lon = latlon
 
@@ -146,6 +142,7 @@ def latlon_to_features(nrel,latlon,features,year = 2013):
 	wind_speeds =  get_speeds(nrel['dset'],loc_idx,year_idx)
 	mean_wind_speed = np.mean(wind_speeds)
 	#mean_cubed_wind_speed = np.mean(wind_speeds**3)
+	power_curve_fn = get_power_curve() 
 	pow_curve = np.mean(power_curve_fn(wind_speeds))
 	mean_temp, mean_pressure, mean_precip = [
 	    np.mean(get_vals(nrel['f'][dset_name],loc_idx,year_idx))

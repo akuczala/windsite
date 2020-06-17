@@ -49,14 +49,14 @@ def fit_regression(model,X,y,score = 'neg_root_mean_squared_error', random_state
 
     return model
 
-def test_classifier(model,X,y, random_state = 0, score = 'f1',plot_partial=False):
+def test_classifier(model,X,y, random_state = 0, score = 'f1',plot_partial=False,return_data=False,test_size=0.5):
     score_funs = {
     'f1' : f1_score, 'precision' : precision_score
     }
     score_fun = score_funs[score]
     
     #split the data into training / testing set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, stratify = y, random_state= random_state)
+    X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=test_size, stratify = y, random_state= random_state)
     #X_train = normalize(X_train)
     #X_test = normalize(X_test)
     #cross validate with f1 scores
@@ -85,7 +85,7 @@ def test_classifier(model,X,y, random_state = 0, score = 'f1',plot_partial=False
     plot_precision_recall_curve(model,X_test,y_test,ax=roc_ax)
     
     
-    result = permutation_importance(model, X_test, y_test, n_repeats=10,
+    result = permutation_importance(model, X_test, y_test, n_repeats=40,
                                 random_state=random_state, n_jobs=1)
     sorted_idx = result.importances_mean.argsort()
 
@@ -97,9 +97,14 @@ def test_classifier(model,X,y, random_state = 0, score = 'f1',plot_partial=False
     
     if plot_partial:
         plot_partial_dependence(model,X,np.arange(X.shape[-1]))
-    
-    return model #returns fitted estimator
+    if return_data:
+        return model, (X_train, X_test, y_train, y_test)
+    else:
+        return model #returns fitted estimator
 
+def pred_thresh(model,X,th,label_i = 1):
+    probs = model.predict_proba(X)
+    return (probs[:,label_i] > th).astype(np.int)
 
 ##Adapted from https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,

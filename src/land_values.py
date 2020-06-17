@@ -1,10 +1,14 @@
 import pandas as pd
 import re
 import geopandas as gpd
-
+import numpy as np
 import maps
+from matplotlib import pyplot as plt
 
-def scrape_landwatch()
+import imp
+imp.reload(maps)
+import maps
+def scrape_landwatch():
 	pass
 
 def parse_text(text):
@@ -24,19 +28,19 @@ def parse_google_url(url):
         print('couldnt parse ' + text)
         return (np.nan,np.nan)
 
-def parse_landwatch()
-	list_df = pd.read_pickle('../data/landwatch/large-listings1-100.pkl')
+def parse_landwatch(list_df,google_df):
+	# list_df = pd.read_pickle('../data/landwatch/large-listings1-100.pkl')
 
-	google_df = pd.concat([
-	    pd.read_pickle('data/landwatch/google_urls0.pkl'),
-	    pd.concat([
-	    	pd.read_pickle('data/landwatch/google_urls1-100.pkl'),pd.DataFrame({'index' : np.arange(1,101)})
-	    ], axis=1),
-	    pd.read_pickle('data/landwatch/google_urls100-501.pkl').iloc[1:],
-	    pd.read_pickle('data/landwatch/google_urls502-1499.pkl')
-	]).reset_index()
+	# google_df = pd.concat([
+	#     pd.read_pickle('data/landwatch/google_urls0.pkl'),
+	#     pd.concat([
+	#     	pd.read_pickle('data/landwatch/google_urls1-100.pkl'),pd.DataFrame({'index' : np.arange(1,101)})
+	#     ], axis=1),
+	#     pd.read_pickle('data/landwatch/google_urls100-501.pkl').iloc[1:],
+	#     pd.read_pickle('data/landwatch/google_urls502-1499.pkl')
+	# ]).reset_index()
 	assert len(google_df) ==len(list_df)
-	google_df = google_df.drop('level_0',axis=1)
+	#google_df = google_df.drop('level_0',axis=1)
 
 	df = pd.concat([list_df,google_df],axis=1)
 	df = df[df['google_url']!='error']
@@ -45,21 +49,23 @@ def parse_landwatch()
 	df['latitude'],df['longitude'] = list(zip(*df['google_url'].apply(parse_google_url)))
 	parsed_df = df[['acres','price','latitude','longitude']].dropna()
 	parsed_df['ppa'] = parsed_df['price']/parsed_df['acres']
-	parsed_df = parsed_df[parsed_df['longitude'] < -100] # remove incorrectly labeled points
+	#parsed_df = parsed_df[parsed_df['longitude'] < -100] # remove incorrectly labeled points
 
 	return parsed_df
 
-def plot_ppa(parsed_df):
-	ca_gpd = maps.get_state_gpd('CA')
+def plot_ppa(parsed_df,state_code,ax = None):
+	if ax is None:
+		ax = plt.gca()
+	ca_gpd = maps.get_state_gdf(state_code)
 
 	from mpl_toolkits.axes_grid1 import make_axes_locatable
 	from matplotlib.colors import LogNorm
 	#sns.scatterplot(data=parsed_df,x='latitude',y='longitude',hue='ppa')
 	fig, ax = plt.subplots(figsize=(8,8))
 	#plot california
-	base = ca_gpd.plot(color='white',edgecolor='black',ax=ax)
+	base = ca_gpd.plot(color='none',edgecolor='black',ax=ax)
 	#im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=np.log10(parsed_df['ppa']))
-	im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=parsed_df['ppa'],norm=LogNorm())
+	im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=parsed_df['ppa'],norm=LogNorm(),cmap='magma')
 	plt.axis('off')
 	#fig.colorbar(im,ax=ax)
 	ax.set_aspect(aspect=1)
@@ -69,4 +75,5 @@ def plot_ppa(parsed_df):
 	cbar = fig.colorbar(im, cax=cax,ticks=[1e3,1e4,1e5])
 	cbar.ax.set_yticklabels(['$1000','$10,000','$100,000'])
 	ax.set_title('Price per acre')
-	plt.show()
+	return ax
+	#plt.show()
