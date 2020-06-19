@@ -35,7 +35,7 @@ def fit_regression(model,X,y,score = 'neg_root_mean_squared_error', random_state
     scores = cross_val_score(model,X_train,y_train,scoring = score)
 
     print('cross validation scores:', scores)
-
+    print('mean,std',np.mean(scores),np.std(scores))
     #fit data and compare scores for training and testing data
     model = model.fit(X_train, y_train)
 

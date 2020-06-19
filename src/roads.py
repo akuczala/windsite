@@ -25,15 +25,16 @@ def latlon_float(latlon):
     return (float(latlon[0]),float(latlon[1]))
 
 #consider removing motorway, residential
-def is_valid_highway(label):
+def is_valid_highway(label,valid_highways = None):
     #valid_highways = 'motorway,trunk,primary,secondary,tertiary,unclassified,residential'.split(',')
-    valid_highways = 'motorway,trunk,primary,secondary,tertiary,unclassified'.split(',')
+    if valid_highways is None:
+        valid_highways = 'motorway,trunk,primary,secondary,tertiary,unclassified'.split(',')
     return np.any([label == l for l in valid_highways]) 
 
-def closest_valid_node(latlon,ways,debug=False):
+def closest_valid_node(latlon,ways,debug=False,valid_highways = None):
 		
     highway_labels = [way.tags.get("highway", "n/a") for way in ways]
-    is_valid = list(map(is_valid_highway,highway_labels))
+    is_valid = list(map(lambda x: is_valid_highway(x,valid_highways=valid_highways),highway_labels))
     valid_ways = [way for way,v in zip(ways,is_valid) if v]
     if debug:
     	print(len(valid_ways),'/',len(ways),'valid')
@@ -50,13 +51,15 @@ def closest_valid_node(latlon,ways,debug=False):
 
     return min_coord, min_dist, min_label
 
-def get_closest_road(latlon,debug=False,radius=5000):
+def get_closest_road(latlon,radius=5000,**kwargs):
 	result = api.query(make_query(*latlon,radius=radius))
 
-	return closest_valid_node(latlon,result.ways,debug=debug)
+	return closest_valid_node(latlon,result.ways,**kwargs)
 
-def get_closest_road_radii(latlon,debug=False,max_radius = 5000):
-    out = get_closest_road(latlon,debug=debug,radius=1000)
+def get_closest_road_radii(latlon,max_radius = 10000,**kwargs):
+    out = get_closest_road(latlon,radius=1000,**kwargs)
     if np.isnan(out[1]):
-        out = get_closest_road(latlon,debug=debug,radius=max_radius)
+        out = get_closest_road(latlon,radius=5000,**kwargs)
+    if np.isnan(out[1]):
+        out = get_closest_road(latlon,max_radius=max_radius,**kwargs)
     return out

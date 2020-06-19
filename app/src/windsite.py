@@ -66,10 +66,16 @@ def text_box(label,default_val,error='Invalid value',dtype = int):
 #utility_rate = text_box('LMP or PPA $/(kWh)',UTILITY_RATE_DEFAULT,dtype=float)
 
 max_trans_dist = st.sidebar.slider('Maximum distance to transmission line (Miles)', 0, 200, TRANS_DIST_DEFAULT)
-max_road_dist = st.sidebar.slider('Maximum distance to road (Miles)', 0., 1., 0.2)
+max_road_dist = st.sidebar.slider('Maximum distance to road (Miles)', 0., 5., 0.2)
 max_n_sites = st.sidebar.slider('Number of sites shown',1,10, N_SITES_DEFAULT, step=1)
 
-trans_weight = st.sidebar.slider('Transmission weight', 0., 1., 0.5)
+def weight_label(x):
+	if x == 1:
+		return 'Important'
+	if x == 0:
+		return 'Unimportant'
+	return x
+trans_weight = st.sidebar.slider('Transmission weight', 0., 1., 0.5, format = weight_label(x))
 road_weight = st.sidebar.slider('Road weight', 0., 1., 0.5)
 value_weight = st.sidebar.slider('Land price weight', 0., 1., 0.5)
 weights = dict(trans=trans_weight,road=road_weight,land_value = value_weight)
@@ -83,7 +89,8 @@ def get_ranges(data):
 def range_scale(x,rng):
 	return (x-rng[0])/(rng[1]-rng[0])
 def cost_fn(values,weights,data_ranges):
-	return sum(weights[k]*range_scale(values[k],data_ranges[k]) for k in ['trans','road','land_value'])
+	sum_weights = sum(weights[k] for k in ['trans','road','land_value'])
+	return sum(weights[k]*range_scale(values[k],data_ranges[k]) for k in ['trans','road','land_value'])/sum_weights
  
 filtered_data = data[(data[TRANS_DIST_COL] <= max_trans_dist) & (data[ROAD_DIST_COL] <= max_road_dist)]
 #st.write(filtered_data)
@@ -97,12 +104,58 @@ costs = filtered_data.apply(
 		data_ranges
 	), axis = 1
 )
-filtered_data['costs'] = costs
 
-filtered_data = filtered_data.sort_values('costs',ascending=True).iloc[:max_n_sites]
+n_shown_sites = min(len(filtered_data),max_n_sites)
+
 
 st.subheader(f'Estimates for potential sites')
+if n_shown_sites == 0:
+	st.write('No sites found')
+	map_df = pd.DataFrame({'lat' : [30], 'lon' : [-100], 'color' : [(0,0,0)]})
+	map_layers = []
+else:
+	filtered_data['costs'] = costs
 
+	filtered_data = filtered_data.sort_values('costs',ascending=True).iloc[:n_shown_sites]
+	display_df = pd.DataFrame({
+		'Transmission line distance (miles)' : filtered_data[TRANS_DIST_COL],
+		'Road distance (miles)' : filtered_data[ROAD_DIST_COL],
+		'Price per acre' : filtered_data[LAND_VALUE_COL],
+		#'Price per acre' : 10**(np.log10(filtered_data[LAND_VALUE_COL]) - filtered_data[('ML','land_value_logstd')]),
+		#'+/-' : 10**(np.log10(filtered_data[LAND_VALUE_COL]) + filtered_data[('ML','land_value_logstd')]),
+		'County' : filtered_data[('nrel','County')],
+	})
+
+	display_df.index = np.arange(1,n_shown_sites+1)
+	#df.style.format({'B': "{:0<4.0f}", 'D': '{:+.2f}'})
+	st.write(display_df.style.format({
+		'Transmission line distance (miles)' : "{:0.2f}",
+		'Road distance (miles)' :  "{:0.2f}",
+		'Price per acre' : "${:0.0f}",
+		#'+/-' : "${:0.2f}"
+		#'County' : filtered_data[('nrel','County')],
+	}))
+
+	colors = [(255,0,0),(200,0,0),(150,0,0),(100,0,0)] + [(0,0,0) for _ in range(max(0,n_shown_sites-3))]
+
+	map_df = pd.DataFrame({
+		'lat' : filtered_data[('nrel','latitude')].iloc[:n_shown_sites],
+		'lon' : filtered_data[('nrel','longitude')].iloc[:n_shown_sites],
+		'val' : filtered_data[('ML','land_value')].iloc[:n_shown_sites],
+		'site_number' : [str(x+1) for x in range(n_shown_sites)],
+		'color' : colors[:n_shown_sites]
+	})
+	map_layers=[
+		pdk.Layer(
+			'TextLayer',
+			data=map_df,
+			get_position='[lon, lat]',
+			get_color = 'color',
+			get_text='site_number',
+			get_size=30,
+			get_angle=0,
+			get_text_anchor='middle',
+		)]
 # import gmaps
 # import os
 # import geopandas as gpd
@@ -125,24 +178,7 @@ st.subheader(f'Estimates for potential sites')
 # display_df = pd.DataFrame({
 # 	'% Capacity' : filtered_data[FRAC_CAP_COL]*100,
 #  'Yearly revenue ($)' : revenue, 'Transmission Line Cost ($)' : trans_cost*filtered_data[TRANS_DIST_COL]}) 
-display_df = pd.DataFrame({
-	'Transmission line distance (miles)' : filtered_data[TRANS_DIST_COL],
-	'Road distance (miles)' : filtered_data[ROAD_DIST_COL],
-	'Price per acre' : filtered_data[LAND_VALUE_COL],
-	'County' : filtered_data[('nrel','County')],
-})
-display_df.index = np.arange(1,max_n_sites+1)
-st.write(display_df)
 
-colors = [(255,0,0),(200,0,0),(150,0,0),(100,0,0)] + [(0,0,0) for _ in range(max(0,max_n_sites-3))]
-st.write(len(colors))
-map_df = pd.DataFrame({
-	'lat' : filtered_data[('nrel','latitude')].iloc[:max_n_sites],
-	'lon' : filtered_data[('nrel','longitude')].iloc[:max_n_sites],
-	'val' : filtered_data[('ML','land_value')].iloc[:max_n_sites],
-	'site_number' : [str(x+1) for x in range(max_n_sites)],
-	'color' : colors[:max_n_sites]
-})
 st.pydeck_chart(pdk.Deck(
      map_style='mapbox://styles/mapbox/outdoors-v9',
      initial_view_state=pdk.ViewState(
@@ -151,17 +187,7 @@ st.pydeck_chart(pdk.Deck(
          zoom=5,
          pitch=0,
      ),
-     layers=[
-		pdk.Layer(
-			'TextLayer',
-			data=map_df,
-			get_position='[lon, lat]',
-			get_color = 'color',
-			get_text='site_number',
-			get_size=30,
-			get_angle=0,
-			get_text_anchor='middle',
-		),
+     layers=map_layers
 		# pdk.Layer(
 		# 	'ScatterplotLayer',
 		# 	data=map_df,
@@ -181,5 +207,4 @@ st.pydeck_chart(pdk.Deck(
          #    pickable=True,
          #    extruded=True,
          # ),
-     ],
  ))
