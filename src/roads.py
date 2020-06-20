@@ -61,5 +61,5 @@ def get_closest_road_radii(latlon,max_radius = 10000,**kwargs):
     if np.isnan(out[1]):
         out = get_closest_road(latlon,radius=5000,**kwargs)
     if np.isnan(out[1]):
-        out = get_closest_road(latlon,max_radius=max_radius,**kwargs)
+        out = get_closest_road(latlon,radius=max_radius,**kwargs)
     return out

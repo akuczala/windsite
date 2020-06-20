@@ -2,11 +2,12 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pydeck as pdk
+import st_state_patch
 #from matplotlib import pyplot as plt
 
 st.title('WindSite')
 
-DATA_DIR = 'data/results.pkl'
+DATA_DIR = 'data/results-2.pkl'
 FRAC_CAP_COL = 'frac_capacity'
 CAPACITY_DEFAULT = 50
 TRANS_COST_DEFAULT = 1000
@@ -15,8 +16,16 @@ UTILITY_RATE_DEFAULT = 0.3
 YEAR_KWH = 8.76e6
 TRANS_DIST_COL = ('trans','distance')
 ROAD_DIST_COL = ('road','distance')
+RES_ROAD_DIST_COL = ('res_road','distance')
 LAND_VALUE_COL = ('ML','land_value')
 N_SITES_DEFAULT = 3
+
+s = st.State()
+if not s:
+    # Initialize it here!
+    s.trans = 0.5
+    s.road = 0.5
+    s.value = 0.5
 @st.cache
 def load_data():
     data = pd.read_pickle(DATA_DIR)
@@ -66,7 +75,8 @@ def text_box(label,default_val,error='Invalid value',dtype = int):
 #utility_rate = text_box('LMP or PPA $/(kWh)',UTILITY_RATE_DEFAULT,dtype=float)
 
 max_trans_dist = st.sidebar.slider('Maximum distance to transmission line (Miles)', 0, 200, TRANS_DIST_DEFAULT)
-max_road_dist = st.sidebar.slider('Maximum distance to road (Miles)', 0., 5., 0.2)
+max_road_dist = st.sidebar.slider('Maximum distance to road (Miles)', 0., 8., 0.2)
+min_res_road_dist = st.sidebar.slider('Minimum distance to res road (Miles)', 0., 8., 0.2)
 max_n_sites = st.sidebar.slider('Number of sites shown',1,10, N_SITES_DEFAULT, step=1)
 
 def weight_label(x):
@@ -75,9 +85,34 @@ def weight_label(x):
 	if x == 0:
 		return 'Unimportant'
 	return x
-trans_weight = st.sidebar.slider('Transmission weight', 0., 1., 0.5, format = weight_label(x))
-road_weight = st.sidebar.slider('Road weight', 0., 1., 0.5)
-value_weight = st.sidebar.slider('Land price weight', 0., 1., 0.5)
+
+trans_slider = st.sidebar.empty()
+road_slider = st.sidebar.empty()
+value_slider = st.sidebar.empty()
+
+#st.write(trans_weight)
+
+#weight_vec = np.array([trans_weight,road_weight,value_weight])
+#weight_vec = weight_vec/np.sum(weight_vec)
+#trans_weight, road_weight, value_weight = weight_vec
+
+
+#trans_weight = trans_slider.slider('Transmission weight', 0., 1., trans_weight,key='a')
+#road_weight = road_slider.slider('Road weight', 0., 1., road_weight,key='b')
+#value_weight = value_slider.slider('Land price weight', 0., 1., value_weight,key='c')
+# trans_weight = trans_slider.slider('Transmission weight', 0., 1., s.trans,key='a')
+# road_weight = road_slider.slider('Road weight', 0., 1., s.road,key='b')
+# value_weight = value_slider.slider('Land price weight', 0., 1., s.value,key='c')
+
+trans_weight = trans_slider.slider('Transmission weight', 0., 1., 0.5,key='a')
+road_weight = road_slider.slider('Road weight', 0., 1., 0.5,key='b')
+value_weight = value_slider.slider('Land price weight', 0., 1., 0.5,key='c')
+
+s.trans = trans_weight; s.road = road_weight; s.value = value_weight
+
+
+st.write(trans_weight)
+
 weights = dict(trans=trans_weight,road=road_weight,land_value = value_weight)
 
 def get_ranges(data):
@@ -88,11 +123,19 @@ def get_ranges(data):
     }
 def range_scale(x,rng):
 	return (x-rng[0])/(rng[1]-rng[0])
+def log_range_scale(x,rng):
+	log_x = np.log10(x)
+	log_rng = tuple(map(np.log10,rng))
+	return range_scale(log_x,log_rng)
 def cost_fn(values,weights,data_ranges):
 	sum_weights = sum(weights[k] for k in ['trans','road','land_value'])
-	return sum(weights[k]*range_scale(values[k],data_ranges[k]) for k in ['trans','road','land_value'])/sum_weights
+	return sum(weights[k]*log_range_scale(values[k],data_ranges[k]) for k in ['trans','road','land_value'])/sum_weights
  
-filtered_data = data[(data[TRANS_DIST_COL] <= max_trans_dist) & (data[ROAD_DIST_COL] <= max_road_dist)]
+filtered_data = data[
+	(data[TRANS_DIST_COL] <= max_trans_dist) & \
+	(data[ROAD_DIST_COL] <= max_road_dist) & \
+	(data[RES_ROAD_DIST_COL] >= min_res_road_dist)
+	]
 #st.write(filtered_data)
 data_ranges = get_ranges(filtered_data)
 costs = filtered_data.apply(
@@ -123,6 +166,7 @@ else:
 		'Price per acre' : filtered_data[LAND_VALUE_COL],
 		#'Price per acre' : 10**(np.log10(filtered_data[LAND_VALUE_COL]) - filtered_data[('ML','land_value_logstd')]),
 		#'+/-' : 10**(np.log10(filtered_data[LAND_VALUE_COL]) + filtered_data[('ML','land_value_logstd')]),
+		'NREL Capacity factor' : filtered_data[('nrel','capacity_factor')],
 		'County' : filtered_data[('nrel','County')],
 	})
 
@@ -143,6 +187,8 @@ else:
 		'lon' : filtered_data[('nrel','longitude')].iloc[:n_shown_sites],
 		'val' : filtered_data[('ML','land_value')].iloc[:n_shown_sites],
 		'site_number' : [str(x+1) for x in range(n_shown_sites)],
+		'res_lat' : filtered_data[('res_road','latitude')].iloc[:n_shown_sites],
+		'res_lon' : filtered_data[('res_road','longitude')].iloc[:n_shown_sites],
 		'color' : colors[:n_shown_sites]
 	})
 	map_layers=[
@@ -155,7 +201,15 @@ else:
 			get_size=30,
 			get_angle=0,
 			get_text_anchor='middle',
-		)]
+		),
+		pdk.Layer(
+			'ScatterplotLayer',
+			data=map_df,
+			get_position='[res_lon, res_lat]',
+			get_color = 'color',
+			radiusScale = 50,
+		),
+	]
 # import gmaps
 # import os
 # import geopandas as gpd
