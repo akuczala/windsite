@@ -7,11 +7,11 @@ import st_state_patch
 
 st.title('WindSite')
 
-DATA_DIR = 'data/results-2.pkl'
+DATA_DIR = 'data/results-21.pkl'
 FRAC_CAP_COL = 'frac_capacity'
 CAPACITY_DEFAULT = 50
 TRANS_COST_DEFAULT = 1000
-TRANS_DIST_DEFAULT = 10
+TRANS_DIST_DEFAULT = 50
 UTILITY_RATE_DEFAULT = 0.3
 YEAR_KWH = 8.76e6
 TRANS_DIST_COL = ('trans','distance')
@@ -73,12 +73,24 @@ def text_box(label,default_val,error='Invalid value',dtype = int):
 # 	trans_cost = TRANS_COST_DEFAULT
 
 #utility_rate = text_box('LMP or PPA $/(kWh)',UTILITY_RATE_DEFAULT,dtype=float)
+st.sidebar.markdown('# Constraints')
 
-max_trans_dist = st.sidebar.slider('Maximum distance to transmission line (Miles)', 0, 200, TRANS_DIST_DEFAULT)
-max_road_dist = st.sidebar.slider('Maximum distance to road (Miles)', 0., 8., 0.2)
-min_res_road_dist = st.sidebar.slider('Minimum distance to res road (Miles)', 0., 8., 0.2)
+show_sites_available = st.sidebar.empty()
+max_trans_dist = st.sidebar.slider('Maximum distance to transmission line (miles)', 0, 50, TRANS_DIST_DEFAULT)
+max_road_dist = st.sidebar.slider('Maximum distance to road (miles)', 0., 6.0, 6.0)
+min_res_road_dist = st.sidebar.slider('Minimum distance to residential area (miles)', 0., 6., 1.5)
+
+filtered_data = data[
+	(data[TRANS_DIST_COL] <= max_trans_dist) & \
+	(data[ROAD_DIST_COL] <= max_road_dist) & \
+	(data[RES_ROAD_DIST_COL] >= min_res_road_dist)
+	]
+
+#sidebar_text = st.sidebar.empty()
+show_sites_available.markdown(str(len(filtered_data)) + ' compatible sites')
+
 max_n_sites = st.sidebar.slider('Number of sites shown',1,10, N_SITES_DEFAULT, step=1)
-
+show_heatmap = st.sidebar.checkbox('Show all compatible site locations', value=False)
 def weight_label(x):
 	if x == 1:
 		return 'Important'
@@ -86,6 +98,8 @@ def weight_label(x):
 		return 'Unimportant'
 	return x
 
+st.sidebar.markdown('# Weights')
+st.sidebar.markdown('Least important --- Most important')
 trans_slider = st.sidebar.empty()
 road_slider = st.sidebar.empty()
 value_slider = st.sidebar.empty()
@@ -104,14 +118,12 @@ value_slider = st.sidebar.empty()
 # road_weight = road_slider.slider('Road weight', 0., 1., s.road,key='b')
 # value_weight = value_slider.slider('Land price weight', 0., 1., s.value,key='c')
 
-trans_weight = trans_slider.slider('Transmission weight', 0., 1., 0.5,key='a')
-road_weight = road_slider.slider('Road weight', 0., 1., 0.5,key='b')
-value_weight = value_slider.slider('Land price weight', 0., 1., 0.5,key='c')
+
+trans_weight = trans_slider.slider('Transmission line distance', 0., 1., 0.5,key='a',format='')
+road_weight = road_slider.slider('Road distance', 0., 1., 0.5,key='b',format='')
+value_weight = value_slider.slider('Land price', 0., 1., 0.5,key='c',format='')
 
 s.trans = trans_weight; s.road = road_weight; s.value = value_weight
-
-
-st.write(trans_weight)
 
 weights = dict(trans=trans_weight,road=road_weight,land_value = value_weight)
 
@@ -130,12 +142,7 @@ def log_range_scale(x,rng):
 def cost_fn(values,weights,data_ranges):
 	sum_weights = sum(weights[k] for k in ['trans','road','land_value'])
 	return sum(weights[k]*log_range_scale(values[k],data_ranges[k]) for k in ['trans','road','land_value'])/sum_weights
- 
-filtered_data = data[
-	(data[TRANS_DIST_COL] <= max_trans_dist) & \
-	(data[ROAD_DIST_COL] <= max_road_dist) & \
-	(data[RES_ROAD_DIST_COL] >= min_res_road_dist)
-	]
+
 #st.write(filtered_data)
 data_ranges = get_ranges(filtered_data)
 costs = filtered_data.apply(
@@ -159,15 +166,18 @@ if n_shown_sites == 0:
 else:
 	filtered_data['costs'] = costs
 
-	filtered_data = filtered_data.sort_values('costs',ascending=True).iloc[:n_shown_sites]
+	top_data = filtered_data.sort_values('costs',ascending=True).iloc[:n_shown_sites]
+
+	n_stds = 2
+	price_lower = 10**(np.log10(top_data[LAND_VALUE_COL]) - n_stds*top_data[('ML','land_value_logstd')])
+	price_upper = 10**(np.log10(top_data[LAND_VALUE_COL]) + n_stds*top_data[('ML','land_value_logstd')])
 	display_df = pd.DataFrame({
-		'Transmission line distance (miles)' : filtered_data[TRANS_DIST_COL],
-		'Road distance (miles)' : filtered_data[ROAD_DIST_COL],
-		'Price per acre' : filtered_data[LAND_VALUE_COL],
-		#'Price per acre' : 10**(np.log10(filtered_data[LAND_VALUE_COL]) - filtered_data[('ML','land_value_logstd')]),
-		#'+/-' : 10**(np.log10(filtered_data[LAND_VALUE_COL]) + filtered_data[('ML','land_value_logstd')]),
-		'NREL Capacity factor' : filtered_data[('nrel','capacity_factor')],
-		'County' : filtered_data[('nrel','County')],
+		'Transmission line distance (miles)' : top_data[TRANS_DIST_COL],
+		'Road distance (miles)' : top_data[ROAD_DIST_COL],
+		#'Price per acre' : top_data[LAND_VALUE_COL],
+		'Price per acre' : list(zip(price_lower,price_upper)),
+		'NREL Capacity factor' : top_data[('nrel','capacity_factor')],
+		'County' : top_data[('nrel','County')],
 	})
 
 	display_df.index = np.arange(1,n_shown_sites+1)
@@ -175,7 +185,9 @@ else:
 	st.write(display_df.style.format({
 		'Transmission line distance (miles)' : "{:0.2f}",
 		'Road distance (miles)' :  "{:0.2f}",
-		'Price per acre' : "${:0.0f}",
+		#'Price per acre' : "${:0.0f}",
+		'Price per acre' : lambda lowhigh: "${0:0.0f}-{1:0.0f}".format(*lowhigh),
+		#'NREL Capacity factor' : lambda x: "{0.2f}".format(x)
 		#'+/-' : "${:0.2f}"
 		#'County' : filtered_data[('nrel','County')],
 	}))
@@ -183,12 +195,12 @@ else:
 	colors = [(255,0,0),(200,0,0),(150,0,0),(100,0,0)] + [(0,0,0) for _ in range(max(0,n_shown_sites-3))]
 
 	map_df = pd.DataFrame({
-		'lat' : filtered_data[('nrel','latitude')].iloc[:n_shown_sites],
-		'lon' : filtered_data[('nrel','longitude')].iloc[:n_shown_sites],
-		'val' : filtered_data[('ML','land_value')].iloc[:n_shown_sites],
+		'lat' : top_data[('nrel','latitude')].iloc[:n_shown_sites],
+		'lon' : top_data[('nrel','longitude')].iloc[:n_shown_sites],
+		'val' : top_data[('ML','land_value')].iloc[:n_shown_sites],
 		'site_number' : [str(x+1) for x in range(n_shown_sites)],
-		'res_lat' : filtered_data[('res_road','latitude')].iloc[:n_shown_sites],
-		'res_lon' : filtered_data[('res_road','longitude')].iloc[:n_shown_sites],
+		'res_lat' : top_data[('res_road','latitude')].iloc[:n_shown_sites],
+		'res_lon' : top_data[('res_road','longitude')].iloc[:n_shown_sites],
 		'color' : colors[:n_shown_sites]
 	})
 	map_layers=[
@@ -210,6 +222,22 @@ else:
 			radiusScale = 50,
 		),
 	]
+	if show_heatmap:
+		map_filter_df = pd.DataFrame({
+			'lat' : filtered_data[('nrel','latitude')],
+			'lon' : filtered_data[('nrel','longitude')],
+			})
+		blue_map = [[241,238,246],[208,209,230],[166,189,219],[116,169,207],[43,140,190],[4,90,141]]
+		transp_blue_map = [c + [200,] for c in blue_map]
+		heatmap_layer = pdk.Layer(
+			'HeatmapLayer',
+			data=map_filter_df,
+			get_position='[lon, lat]',
+			color_range = transp_blue_map
+			#get_color = '[0,255,0]',
+			#radiusScale = 5000,
+		)
+		map_layers = [heatmap_layer,] + map_layers
 # import gmaps
 # import os
 # import geopandas as gpd

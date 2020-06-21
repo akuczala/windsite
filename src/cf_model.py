@@ -31,6 +31,9 @@ def clean_data(root_dir):
     #data_df['t_capacity'] = ('t_cap<lambda>')
     #calc mean construction year
     data_df['p_year'] = [usw_df.set_index('eia_id').loc[ei,'p_year'].mean() for ei in data_df['eia_id']]
+    #include NREL techno-eco capacity factor
+    wf_techno_df = pd.read_pickle('../data/all-wind-1/wind_farm_techno.pkl')
+    data_df['techno_cap_factor'] = [wf_techno_df.set_index('eia_id').loc[ei,'capacity_factor'] for ei in data_df['eia_id']]
     #include state
     def extract_state(ei): #need this function because length-1 result has type str instead of series
         thing = usw_df.set_index('eia_id').loc[ei,'t_state']
@@ -40,7 +43,7 @@ def clean_data(root_dir):
             return thing.iloc[0]
     data_df['t_state'] = [extract_state(ei) for ei in data_df['eia_id']]
 
-    clean_data_df = data_df[[
+    clean_data_df = data_df[['techno_cap_factor',
     'elevation','mean_wind_speed', 'pow_curve','temperature','p_year','t_state','eia_id',
     't_cap_factor','p_cap_factor',
     't_cap_factor_18','p_cap_factor_18','t_cap <lambda>','p_cap max','latitude','longitude']].dropna()
