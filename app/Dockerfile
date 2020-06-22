@@ -20,12 +20,14 @@ ENV PATH /opt/conda/bin:$PATH
 #RUN cd /src; pip install -r requirements.txt
 
 RUN conda install pandas
+
 RUN pip install streamlit
 RUN conda install -c conda-forge pydeck
+RUN conda install psycopg2
 
 # Bundle app source
 ADD src/* src/
-add data/* data/
+ADD data/* data/
 
 # Expose
 EXPOSE  8501
