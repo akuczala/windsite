@@ -3,21 +3,31 @@ import pandas as pd
 import numpy as np
 import pydeck as pdk
 import st_state_patch
+import db
+from db_names import *
 #from matplotlib import pyplot as plt
 
 st.title('WindSite')
 
 DATA_DIR = 'data/results-21.pkl'
-FRAC_CAP_COL = 'frac_capacity'
-CAPACITY_DEFAULT = 50
-TRANS_COST_DEFAULT = 1000
-TRANS_DIST_DEFAULT = 50
-UTILITY_RATE_DEFAULT = 0.3
-YEAR_KWH = 8.76e6
-TRANS_DIST_COL = ('trans','distance')
-ROAD_DIST_COL = ('road','distance')
-RES_ROAD_DIST_COL = ('res_road','distance')
-LAND_VALUE_COL = ('ML','land_value')
+# FRAC_CAP_COL = 'frac_capacity'
+# CAPACITY_DEFAULT = 50
+# TRANS_COST_DEFAULT = 1000
+# TRANS_DIST_DEFAULT = 50
+# UTILITY_RATE_DEFAULT = 0.3
+# YEAR_KWH = 8.76e6
+# TRANS_DIST_COL = 'trans_distance'
+# ROAD_DIST_COL = 'road_distance'
+# RES_ROAD_DIST_COL = 'res_road_distance'
+# LAND_VALUE_COL = 'ML_land_value'
+# CAPACITY_CLASS_COL = 'ML_capacity_class'
+# NREL_CF_COL = 'nrel_capacity_factor'
+# NREL_LAT_COL = 'nrel_latitude'
+# NREL_LON_COL = 'nrel_longitude'
+# RES_ROAD_LAT_COL = 'res_road_latitude'
+# RES_ROAD_LON_COL = 'res_road_longitude'
+# LAND_VALUE_LOGSTD_COL = 'ML_land_value_logstd'
+# COUNTY_COL = 'nrel_County'
 N_SITES_DEFAULT = 3
 
 s = st.State()
@@ -27,10 +37,13 @@ if not s:
     s.road = 0.5
     s.value = 0.5
 @st.cache
-def load_data():
-    data = pd.read_pickle(DATA_DIR)
+def load_data(max_trans_dist,max_road_dist,min_res_road_dist):
+    #data = pd.read_pickle(DATA_DIR)
+    conn = db.connect()
+    data = db.load_all_results(conn)
+    #data = db.load_with_constraints(conn,max_trans_dist,max_road_dist,min_res_road_dist)
     #filter out everything with the bad capacity class
-    data = data[data[('ML','capacity_class')] > 0]
+    data = data[data[CAPACITY_CLASS_COL] > 0]
     # wind_farm_data = pd.read_pickle('data/select-wind-power.pkl')
     # wind_farm_data = wind_farm_data[[
     # 'elevation',
@@ -39,10 +52,6 @@ def load_data():
     # 'per_turb_cap_frac',
     # 'mean_wind_speed']]
     return data #, wind_farm_data
-
-#data_load_state = st.text('Loading data...')
-data = load_data()
-#data_load_state.text("Done")
 
 def text_box(label,default_val,error='Invalid value',dtype = int):
 	try:
@@ -80,12 +89,17 @@ max_trans_dist = st.sidebar.slider('Maximum distance to transmission line (miles
 max_road_dist = st.sidebar.slider('Maximum distance to road (miles)', 0., 6.0, 6.0)
 min_res_road_dist = st.sidebar.slider('Minimum distance to residential area (miles)', 0., 6., 1.5)
 
+#data_load_state = st.text('Loading data...')
+#data = load_data()
+#data_load_state.text("Done")
+
+data = load_data(max_trans_dist,max_road_dist,min_res_road_dist)
+
 filtered_data = data[
 	(data[TRANS_DIST_COL] <= max_trans_dist) & \
 	(data[ROAD_DIST_COL] <= max_road_dist) & \
 	(data[RES_ROAD_DIST_COL] >= min_res_road_dist)
 	]
-
 #sidebar_text = st.sidebar.empty()
 show_sites_available.markdown(str(len(filtered_data)) + ' compatible sites')
 
@@ -169,15 +183,15 @@ else:
 	top_data = filtered_data.sort_values('costs',ascending=True).iloc[:n_shown_sites]
 
 	n_stds = 2
-	price_lower = 10**(np.log10(top_data[LAND_VALUE_COL]) - n_stds*top_data[('ML','land_value_logstd')])
-	price_upper = 10**(np.log10(top_data[LAND_VALUE_COL]) + n_stds*top_data[('ML','land_value_logstd')])
+	price_lower = 10**(np.log10(top_data[LAND_VALUE_COL]) - n_stds*top_data[LAND_VALUE_LOGSTD_COL])
+	price_upper = 10**(np.log10(top_data[LAND_VALUE_COL]) + n_stds*top_data[LAND_VALUE_LOGSTD_COL])
 	display_df = pd.DataFrame({
 		'Transmission line distance (miles)' : top_data[TRANS_DIST_COL],
 		'Road distance (miles)' : top_data[ROAD_DIST_COL],
 		#'Price per acre' : top_data[LAND_VALUE_COL],
 		'Price per acre' : list(zip(price_lower,price_upper)),
-		'NREL Capacity factor' : top_data[('nrel','capacity_factor')],
-		'County' : top_data[('nrel','County')],
+		'NREL Capacity factor' : top_data[NREL_CF_COL],
+		'County' : top_data[COUNTY_COL],
 	})
 
 	display_df.index = np.arange(1,n_shown_sites+1)
@@ -195,12 +209,12 @@ else:
 	colors = [(255,0,0),(200,0,0),(150,0,0),(100,0,0)] + [(0,0,0) for _ in range(max(0,n_shown_sites-3))]
 
 	map_df = pd.DataFrame({
-		'lat' : top_data[('nrel','latitude')].iloc[:n_shown_sites],
-		'lon' : top_data[('nrel','longitude')].iloc[:n_shown_sites],
-		'val' : top_data[('ML','land_value')].iloc[:n_shown_sites],
+		'lat' : top_data[NREL_LAT_COL].iloc[:n_shown_sites],
+		'lon' : top_data[NREL_LON_COL].iloc[:n_shown_sites],
+		'val' : top_data[LAND_VALUE_COL].iloc[:n_shown_sites],
 		'site_number' : [str(x+1) for x in range(n_shown_sites)],
-		'res_lat' : top_data[('res_road','latitude')].iloc[:n_shown_sites],
-		'res_lon' : top_data[('res_road','longitude')].iloc[:n_shown_sites],
+		'res_lat' : top_data[RES_ROAD_LAT_COL].iloc[:n_shown_sites],
+		'res_lon' : top_data[RES_ROAD_LON_COL].iloc[:n_shown_sites],
 		'color' : colors[:n_shown_sites]
 	})
 	map_layers=[
@@ -224,8 +238,8 @@ else:
 	]
 	if show_heatmap:
 		map_filter_df = pd.DataFrame({
-			'lat' : filtered_data[('nrel','latitude')],
-			'lon' : filtered_data[('nrel','longitude')],
+			'lat' : filtered_data[NREL_LAT_COL],
+			'lon' : filtered_data[NREL_LON_COL],
 			})
 		blue_map = [[241,238,246],[208,209,230],[166,189,219],[116,169,207],[43,140,190],[4,90,141]]
 		transp_blue_map = [c + [200,] for c in blue_map]
