@@ -20,7 +20,7 @@ from sklearn.metrics import classification_report
 import numpy as np
 import matplotlib.pyplot as plt
 
-def fit_regression(model,X,y,score = 'neg_root_mean_squared_error', random_state = 0):
+def fit_regression(model,X,y,score = 'neg_root_mean_squared_error', random_state = 0,return_data=False,test_size=0.5):
 
     score_funs = {
     'explained_variance' : explained_variance_score,
@@ -29,7 +29,7 @@ def fit_regression(model,X,y,score = 'neg_root_mean_squared_error', random_state
     score_fun = score_funs[score]
 
     #split the data into training / testing set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state= random_state)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state= random_state)
 
     #cross validate with f1 scores
     scores = cross_val_score(model,X_train,y_train,scoring = score)
@@ -47,7 +47,10 @@ def fit_regression(model,X,y,score = 'neg_root_mean_squared_error', random_state
     y_pred = model.predict(X_test)
     print(score_fun(y_test, y_pred))
 
-    return model
+    if return_data:
+        return model, (X_train, X_test, y_train, y_test)
+    else:
+        return model #returns fitted estimator
 
 def test_classifier(model,X,y, random_state = 0, score = 'f1',plot_partial=False,return_data=False,test_size=0.5):
     score_funs = {
@@ -202,22 +205,24 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
     axes[0].legend(loc="best")
 
     # Plot n_samples vs fit_times
-    axes[1].grid()
-    axes[1].plot(train_sizes, fit_times_mean, 'o-')
-    axes[1].fill_between(train_sizes, fit_times_mean - fit_times_std,
-                         fit_times_mean + fit_times_std, alpha=0.1)
-    axes[1].set_xlabel("Training examples")
-    axes[1].set_ylabel("fit_times")
-    axes[1].set_title("Scalability of the model")
+    if len(axes) > 1:
+        axes[1].grid()
+        axes[1].plot(train_sizes, fit_times_mean, 'o-')
+        axes[1].fill_between(train_sizes, fit_times_mean - fit_times_std,
+                             fit_times_mean + fit_times_std, alpha=0.1)
+        axes[1].set_xlabel("Training examples")
+        axes[1].set_ylabel("fit_times")
+        axes[1].set_title("Scalability of the model")
 
     # Plot fit_time vs score
-    axes[2].grid()
-    axes[2].plot(fit_times_mean, test_scores_mean, 'o-')
-    axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
-                         test_scores_mean + test_scores_std, alpha=0.1)
-    axes[2].set_xlabel("fit_times")
-    axes[2].set_ylabel(scoring)
-    axes[2].set_title("Performance of the model")
+    if len(axes) > 2:
+        axes[2].grid()
+        axes[2].plot(fit_times_mean, test_scores_mean, 'o-')
+        axes[2].fill_between(fit_times_mean, test_scores_mean - test_scores_std,
+                             test_scores_mean + test_scores_std, alpha=0.1)
+        axes[2].set_xlabel("fit_times")
+        axes[2].set_ylabel(scoring)
+        axes[2].set_title("Performance of the model")
 
-    return plt
+    return axes
 
