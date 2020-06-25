@@ -1,9 +1,6 @@
+#list of relevant column names in SQL database
+
 FRAC_CAP_COL = 'frac_capacity'
-CAPACITY_DEFAULT = 50
-TRANS_COST_DEFAULT = 1000
-TRANS_DIST_DEFAULT = 50
-UTILITY_RATE_DEFAULT = 0.3
-YEAR_KWH = 8.76e6
 TRANS_DIST_COL = 'trans_distance'
 ROAD_DIST_COL = 'road_distance'
 RES_ROAD_DIST_COL = 'res_road_distance'

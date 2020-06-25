@@ -1,51 +1,48 @@
+# The WindSite streamlit app, intended to be run with `streamlit run windsite.py`
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import pydeck as pdk
-import st_state_patch
+#import st_state_patch #needed only when keeping track of state
 import db
 from db_names import *
-#from matplotlib import pyplot as plt
+
+#default values
+TRANS_DIST_DEFAULT = 50
+ROAD_DIST_DEFAULT = 6.0
+RES_ROAD_DIST_DEFAULT = 1.5
+N_SITES_DEFAULT = 3
+#YEAR_KWH = 8.76e6
+
+#settings
+SQL_FILTER = True
 
 st.title('WindSite')
 
-CAPACITY_DEFAULT = 50
-TRANS_COST_DEFAULT = 1000
-TRANS_DIST_DEFAULT = 50
-UTILITY_RATE_DEFAULT = 0.3
-N_SITES_DEFAULT = 3
-YEAR_KWH = 8.76e6
-
-
-s = st.State()
-if not s:
-    # Initialize it here!
-    s.trans = 0.5
-    s.road = 0.5
-    s.value = 0.5
-
+#return the database connection
+#cached so that we need only connect once
+#must allow output mutation to use the connection
 @st.cache(allow_output_mutation=True)
 def get_database_connection():
     return db.connect()
 
-#loading_message = st.empty()
-
+#request data from the SQL connection
 @st.cache(allow_output_mutation=True,show_spinner=False,suppress_st_warning=True)
 def load_data(max_trans_dist,max_road_dist,min_res_road_dist):
-    #loading_message = st.write('Finding sites...')
+
     conn = get_database_connection()
-    #data = db.load_all_results(conn)
-    data = db.load_with_constraints(conn,max_trans_dist,max_road_dist,min_res_road_dist)
-    #filter out everything with the bad capacity class
+
+    if SQL_FILTER: #load only data that meet constraints
+        data = db.load_with_constraints(conn,max_trans_dist,max_road_dist,min_res_road_dist)
+    else: #load all data
+        data = db.load_all_results(conn) 
+    
+
+    #filter out all sites estimated to have below average performance
     data = data[data[CAPACITY_CLASS_COL] > 0]
-    # wind_farm_data = pd.read_pickle('data/select-wind-power.pkl')
-    # wind_farm_data = wind_farm_data[[
-    # 'elevation',
-    # 'latitude',
-    # 'longitude',
-    # 'per_turb_cap_frac',
-    # 'mean_wind_speed']]
-    return data #, wind_farm_data
+
+    return data
 
 def text_box(label,default_val,error='Invalid value',dtype = int):
     try:
@@ -54,28 +51,9 @@ def text_box(label,default_val,error='Invalid value',dtype = int):
         st.text(error)
         val = default_val
     return dtype(val)
-# st.subheader('percent power vs wind')
 
-# if st.checkbox('Show plot'):
-#   plt.scatter(data['mean_wind_speed'],data['per_turb_cap_frac'])
-#   st.pyplot()
 
-# st.button('Update')
-
-#capacity_filter = st.slider('Capacity (MW)', 0, 200, 50)
-# try:
-#   capacity = int(st.text_input('Capacity (MW)',CAPACITY_DEFAULT))
-# except:
-#   st.text('Invalid capacity')
-#   capacity = CAPACITY_DEFAULT
-
-# try:
-#   trans_cost= int(st.text_input('Transmission line $/mile',TRANS_COST_DEFAULT))
-# except:
-#   st.text('Invalid value')
-#   trans_cost = TRANS_COST_DEFAULT
-
-#utility_rate = text_box('LMP or PPA $/(kWh)',UTILITY_RATE_DEFAULT,dtype=float)
+#--SIDEBAR, CONSTRAINTS--
 st.sidebar.markdown('# Constraints')
 
 show_sites_available = st.sidebar.empty()
@@ -83,59 +61,39 @@ max_trans_dist = st.sidebar.slider('Maximum distance to transmission line (miles
 max_road_dist = st.sidebar.slider('Maximum distance to road (miles)', 0., 6.0, 6.0)
 min_res_road_dist = st.sidebar.slider('Minimum distance to residential area (miles)', 0., 6., 1.5)
 
-#data_load_state = st.text('Loading data...')
-#data = load_data()
-#data_load_state.text("Done")
-
 data = load_data(max_trans_dist,max_road_dist,min_res_road_dist)
 
-filtered_data = data
-# filtered_data = data[
-#   (data[TRANS_DIST_COL] <= max_trans_dist) & \
-#   (data[ROAD_DIST_COL] <= max_road_dist) & \
-#   (data[RES_ROAD_DIST_COL] >= min_res_road_dist)
-#   ]
-#sidebar_text = st.sidebar.empty()
+if SQL_FILTER: #data already filtered
+    filtered_data = data
+else: #filter data with pandas
+    filtered_data = data[
+      (data[TRANS_DIST_COL] <= max_trans_dist) & \
+      (data[ROAD_DIST_COL] <= max_road_dist) & \
+      (data[RES_ROAD_DIST_COL] >= min_res_road_dist)
+      ]
+
+#display number of compatible sites
 show_sites_available.markdown(str(len(filtered_data)) + ' compatible sites')
 
+#adjust number of ranked sites
 max_n_sites = st.sidebar.slider('Number of sites shown',1,10, N_SITES_DEFAULT, step=1)
-show_heatmap = st.sidebar.checkbox('Show all compatible site locations', value=False)
-def weight_label(x):
-    if x == 1:
-        return 'Important'
-    if x == 0:
-        return 'Unimportant'
-    return x
 
+#turn site heatmap on or off
+show_heatmap = st.sidebar.checkbox('Show all compatible site locations', value=False)
+
+
+#--SIDEBAR, WEIGHTS--
 st.sidebar.markdown('# Weights')
 st.sidebar.markdown('Least important --- Most important')
-trans_slider = st.sidebar.empty()
-road_slider = st.sidebar.empty()
-value_slider = st.sidebar.empty()
 
-#st.write(trans_weight)
-
-#weight_vec = np.array([trans_weight,road_weight,value_weight])
-#weight_vec = weight_vec/np.sum(weight_vec)
-#trans_weight, road_weight, value_weight = weight_vec
-
-
-#trans_weight = trans_slider.slider('Transmission weight', 0., 1., trans_weight,key='a')
-#road_weight = road_slider.slider('Road weight', 0., 1., road_weight,key='b')
-#value_weight = value_slider.slider('Land price weight', 0., 1., value_weight,key='c')
-# trans_weight = trans_slider.slider('Transmission weight', 0., 1., s.trans,key='a')
-# road_weight = road_slider.slider('Road weight', 0., 1., s.road,key='b')
-# value_weight = value_slider.slider('Land price weight', 0., 1., s.value,key='c')
-
-
-trans_weight = trans_slider.slider('Transmission line distance', 0., 1., 0.5,key='a',format='')
-road_weight = road_slider.slider('Road distance', 0., 1., 0.5,key='b',format='')
-value_weight = value_slider.slider('Land price', 0., 1., 0.5,key='c',format='')
-
-s.trans = trans_weight; s.road = road_weight; s.value = value_weight
+#weight sliders: format='' means that numeric values will not be shown
+trans_weight = st.sidebar.slider('Transmission line distance', 0., 1., 0.5,key='a',format='')
+road_weight = st.sidebar.slider('Road distance', 0., 1., 0.5,key='b',format='')
+value_weight = st.sidebar.slider('Land price', 0., 1., 0.5,key='c',format='')
 
 weights = dict(trans=trans_weight,road=road_weight,land_value = value_weight)
 
+#calculate data ranges
 @st.cache(show_spinner=False)
 def get_ranges(data):
     return {
@@ -143,43 +101,55 @@ def get_ranges(data):
         'road' : (np.min(data[ROAD_DIST_COL]),np.max(data[ROAD_DIST_COL])),
         'land_value' : (np.min(data[LAND_VALUE_COL]),np.max(data[LAND_VALUE_COL])),
     }
+
+#normalize data values to [0,1]
 def range_scale(x,rng):
     return (x-rng[0])/(rng[1]-rng[0])
+
+#normalize data values to [0,1] on a log scale
 def log_range_scale(x,rng):
     log_x = np.log10(x)
     log_rng = tuple(map(np.log10,rng))
     return range_scale(log_x,log_rng)
+
+#compute cost function for ranking: larger is worse
+#the cost function is a convex sum of each factor
+#since each factor is approximately log normal,
+#the values are transformed to log space before taking the weighted sum
 def cost_fn(values,weights,data_ranges):
     sum_weights = sum(weights[k] for k in ['trans','road','land_value'])
     return sum(weights[k]*log_range_scale(values[k],data_ranges[k]) for k in ['trans','road','land_value'])/sum_weights
 
-#st.write(filtered_data)
-data_ranges = get_ranges(filtered_data)
-costs = filtered_data.apply(
-    lambda row: cost_fn(
-        {
-        'trans' : row[TRANS_DIST_COL], 'road' : row[ROAD_DIST_COL],'land_value' : row[LAND_VALUE_COL]
-        },
-        weights,
-        data_ranges
-    ), axis = 1
-)
-
+#show number of sites limited by both the number of available sites, and user specification
 n_shown_sites = min(len(filtered_data),max_n_sites)
 
-
+#APP BODY
 st.subheader(f'Estimates for potential sites')
 
+#do not display dataframe if it is empty
 if n_shown_sites == 0:
     st.write('No sites found')
+    #dummy data to center map on texas
     map_df = pd.DataFrame({'lat' : [30], 'lon' : [-100], 'color' : [(0,0,0)]})
+    #empty map layer
     map_layers = []
-else:
-    filtered_data['costs'] = costs
-
+#display dataframe if it is nonempty
+else: 
+    #compute cost for each site
+    data_ranges = get_ranges(filtered_data)
+    filtered_data['costs'] = filtered_data.apply(
+        lambda row: cost_fn(
+            {
+            'trans' : row[TRANS_DIST_COL], 'road' : row[ROAD_DIST_COL],'land_value' : row[LAND_VALUE_COL]
+            },
+            weights,
+            data_ranges
+        ), axis = 1
+    )
+    #extract top sites
     top_data = filtered_data.sort_values('costs',ascending=True).iloc[:n_shown_sites]
 
-    n_stds = 2
+    n_stds = 2 #95% confidence interval
     price_lower = 10**(np.log10(top_data[LAND_VALUE_COL]) - n_stds*top_data[LAND_VALUE_LOGSTD_COL])
     price_upper = 10**(np.log10(top_data[LAND_VALUE_COL]) + n_stds*top_data[LAND_VALUE_LOGSTD_COL])
     display_df = pd.DataFrame({
