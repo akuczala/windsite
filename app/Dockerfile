@@ -15,9 +15,6 @@ RUN apt-get -qq update && apt-get -qq -y install curl bzip2 \
 
 ENV PATH /opt/conda/bin:$PATH
 
-# Add and install Python modules
-#ADD requirements.txt /src/requirements.txt
-#RUN cd /src; pip install -r requirements.txt
 
 RUN conda install pandas
 

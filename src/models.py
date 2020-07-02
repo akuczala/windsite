@@ -1,10 +1,7 @@
 #this module contains helper functions for fitting models
 
-from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
 from sklearn.metrics import explained_variance_score, r2_score, mean_squared_error
 from sklearn.model_selection import cross_val_score
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF
 
 from sklearn.metrics import f1_score, precision_score
 from sklearn.model_selection import cross_val_score

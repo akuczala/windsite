@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 import imp
 imp.reload(maps)
 import maps
+
 def scrape_landwatch():
 	pass
 
@@ -29,16 +30,7 @@ def parse_google_url(url):
         return (np.nan,np.nan)
 
 def parse_landwatch(list_df,google_df):
-	# list_df = pd.read_pickle('../data/landwatch/large-listings1-100.pkl')
 
-	# google_df = pd.concat([
-	#     pd.read_pickle('data/landwatch/google_urls0.pkl'),
-	#     pd.concat([
-	#     	pd.read_pickle('data/landwatch/google_urls1-100.pkl'),pd.DataFrame({'index' : np.arange(1,101)})
-	#     ], axis=1),
-	#     pd.read_pickle('data/landwatch/google_urls100-501.pkl').iloc[1:],
-	#     pd.read_pickle('data/landwatch/google_urls502-1499.pkl')
-	# ]).reset_index()
 	assert len(google_df) ==len(list_df)
 	#google_df = google_df.drop('level_0',axis=1)
 
@@ -53,6 +45,7 @@ def parse_landwatch(list_df,google_df):
 
 	return parsed_df
 
+#plot price per acre data in a state
 def plot_ppa(parsed_df,state_code,ax = None):
 	if ax is None:
 		ax = plt.gca()
@@ -65,7 +58,7 @@ def plot_ppa(parsed_df,state_code,ax = None):
 	#plot california
 	base = ca_gpd.plot(color='none',edgecolor='black',ax=ax)
 	#im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=np.log10(parsed_df['ppa']))
-	im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=parsed_df['ppa'],norm=LogNorm(),cmap='magma')
+	im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=parsed_df['ppa'],norm=LogNorm(),cmap='viridis')
 	plt.axis('off')
 	#fig.colorbar(im,ax=ax)
 	ax.set_aspect(aspect=1)
