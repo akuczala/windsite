@@ -119,7 +119,7 @@ def pred_thresh(model,X,th,label_i = 1):
 ##Adapted from https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 #plots learning curves for specified estimator and data
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
-                        n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5),scoring='r2'):
+                        n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5),scoring='r2',show_legend=False):
     """
     Generate 3 plots: the test and training learning curve, the training
     samples vs fit times curve, the fit times vs score curve.
@@ -210,7 +210,8 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
                  label="Training score")
     axes[0].plot(train_sizes, test_scores_mean, 'o-', color="g",
                  label="Cross-validation score")
-    axes[0].legend(loc="best")
+    if show_legend:
+        axes[0].legend(loc="best")
 
     # Plot n_samples vs fit_times
     if len(axes) > 1:

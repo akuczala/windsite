@@ -45,28 +45,25 @@ def parse_landwatch(list_df,google_df):
 
 	return parsed_df
 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.colors import LogNorm
 #plot price per acre data in a state
 def plot_ppa(parsed_df,state_code,ax = None):
 	if ax is None:
-		ax = plt.gca()
-	ca_gpd = maps.get_state_gdf(state_code)
-
-	from mpl_toolkits.axes_grid1 import make_axes_locatable
-	from matplotlib.colors import LogNorm
-	#sns.scatterplot(data=parsed_df,x='latitude',y='longitude',hue='ppa')
-	fig, ax = plt.subplots(figsize=(8,8))
+		fig, ax = plt.subplots(figsize=(8,8))
+	state_gdf = maps.get_state_gdf(state_code)
 	#plot california
-	base = ca_gpd.plot(color='none',edgecolor='black',ax=ax)
-	#im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=np.log10(parsed_df['ppa']))
+	base = state_gdf.plot(color='none',edgecolor='black',ax=ax)
 	im = plt.scatter(parsed_df['longitude'],parsed_df['latitude'],c=parsed_df['ppa'],norm=LogNorm(),cmap='viridis')
 	plt.axis('off')
-	#fig.colorbar(im,ax=ax)
 	ax.set_aspect(aspect=1)
 
+	#add custom colorbar
 	divider = make_axes_locatable(ax)
 	cax = divider.append_axes("right", size="5%", pad=0.05)
 	cbar = fig.colorbar(im, cax=cax,ticks=[1e3,1e4,1e5])
 	cbar.ax.set_yticklabels(['$1000','$10,000','$100,000'])
-	ax.set_title('Price per acre')
+
+	ax.set_title('Price per acre',fontsize=16)
 	return ax
 	#plt.show()
