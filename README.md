@@ -1,10 +1,8 @@
 # WindSite
 
-WindSite is an application identifies ideal locations for future wind farm development. Building on work done by NREL, this application narrows the search for wind farm sites by leveraging multiple data sources and machine learning.
+WindSite is an application that identifies ideal locations for future wind farm development. Building on work done by NREL, this application narrows the search for wind farm sites by leveraging multiple data sources and machine learning.
 
 ## Instructions
-
-You can access the app at http://datadoctor.site. This app looks best in wide mode, which can be activated using the hamburger menu in the upper right corner -> Settings.
 
 The app balances 3 weighted factors in order to recommend sites
 - Transmission line proximity
